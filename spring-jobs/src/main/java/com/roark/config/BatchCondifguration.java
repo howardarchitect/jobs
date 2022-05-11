@@ -2,6 +2,9 @@ package com.roark.config;
 
 import com.roark.listener.HwJobExecutionListener;
 import com.roark.listener.HwStepExecutionListener;
+import com.roark.processor.InMemeItemProcessor;
+import com.roark.reader.InMemReader;
+import com.roark.writer.ConsoleItemWriter;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -31,6 +34,10 @@ public class BatchCondifguration {
 
     @Autowired
     private HwStepExecutionListener hwStepExecutionListener;
+    
+    @Autowired
+    private InMemeItemProcessor inMemeItemProcessor;
+
 
     public Tasklet helloWorldTasklet(){
         return (new Tasklet() {
@@ -51,9 +58,28 @@ public class BatchCondifguration {
     }
 
     @Bean
+    public InMemReader reader(){
+       return new InMemReader();
+    }
+
+
+    @Bean
+    public Step step2(){
+        return steps.get("step2").
+                <Integer,Integer>chunk(3)
+                .reader(reader())
+                .processor(inMemeItemProcessor)
+                .writer(new ConsoleItemWriter())
+                .build();
+    }
+
+    @Bean
     public Job helloWorldJob(){
         return jobs.get("helloWorldJob")
                 .listener(hwJobExecutionListener)
-                .start(step1()).build();
+                .start(step1())
+                .next(step2())
+                .build();
     }
+
 }
