@@ -38,8 +38,8 @@ import com.roark.processor.InMemeItemProcessor;
 import com.roark.reader.InMemReader;
 import com.roark.writer.ConsoleItemWriter;
 
-@EnableBatchProcessing
-@Configuration
+//@EnableBatchProcessing
+//@Configuration
 public class BatchCondifguration {
 
 	@Autowired
