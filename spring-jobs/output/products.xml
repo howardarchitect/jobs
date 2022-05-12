@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Products>
+	<product>
+		<productId>1</productId>
+		<prodName>Apple</prodName>
+		<price>500.00</price>
+		<unit>10</unit>
+	</product>
+	<product>
+		<productId>2</productId>
+		<prodName>Dell</prodName>
+		<price>3000</price>
+		<unit>5</unit>
+	</product>
+	<product>
+		<productId>3</productId>
+		<prodName>office</prodName>
+		<price>196</price>
+		<unit>23</unit>
+	</product>
+</Products>

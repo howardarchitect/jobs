@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -21,11 +22,13 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.xml.StaxEventItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.oxm.xstream.XStreamMarshaller;
 
 import com.roark.model.Product;
 
@@ -108,6 +111,30 @@ public class BatchConfig {
         });
         return writer;
    }
+   
+   @Bean
+   @StepScope
+  public StaxEventItemWriter xmlWriter( @Value("#{jobParameters['fileOutput']}" )FileSystemResource outputFile){
+
+       XStreamMarshaller marshaller = new XStreamMarshaller();
+       HashMap<String,Class> aliases = new HashMap<>();
+       aliases.put("product",Product.class);
+       marshaller.setAliases(aliases);
+       marshaller.setAutodetectAnnotations(true);
+
+       
+       StaxEventItemWriter staxEventItemWriter = new StaxEventItemWriter();
+
+       staxEventItemWriter.setResource(outputFile);
+       staxEventItemWriter.setMarshaller(marshaller);
+       staxEventItemWriter.setRootTagName("Products");
+
+       return staxEventItemWriter;
+
+
+  }
+
+
 
 
    @Bean
@@ -115,7 +142,8 @@ public class BatchConfig {
         return steps.get("step1")
                 .<Product,Product>chunk(3)
                 .reader(reader(null))
-                .writer(flatFileItemWriter(null))
+               // .writer(flatFileItemWriter(null))
+                .writer(xmlWriter(null))
                 .build();
    }
 
