@@ -14,6 +14,8 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
+import org.springframework.batch.item.file.transform.Range;
 import org.springframework.batch.item.xml.StaxEventItemReader;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +74,8 @@ public class BatchCondifguration {
 	@Bean
 	public Step step2() {
 		return steps.get("step2").<Integer, Integer>chunk(3)
-				.reader(xmlItemReader(null))
+				.reader(flatfixFileItemReader(null))
+				//.reader(xmlItemReader(null))
 				//.reader(flatFileItemReader(null))
 				// .reader(reader())
 				// .processor(inMemeItemProcessor)
@@ -140,5 +143,48 @@ public class BatchCondifguration {
 		return reader;
 
 	}
+	
+	@StepScope
+    @Bean
+    public FlatFileItemReader flatfixFileItemReader(
+            @Value( "#{jobParameters['inputFile']}" )
+                    FileSystemResource inputFile ){
+        FlatFileItemReader reader = new FlatFileItemReader();
+        // step 1 let reader know where is the file
+        reader.setResource( inputFile );
+
+        //create the line Mapper
+        reader.setLineMapper(
+                new DefaultLineMapper<Product>(){
+                    {
+                        setLineTokenizer( new FixedLengthTokenizer() {
+                            {
+                                setNames( new String[]{"prodId","productName","productDesc","price","unit"});
+                                setColumns(
+                                        new Range(1,16),
+                                        new Range(17,41),
+                                        new Range(42,65),
+                                        new Range(66, 73),
+                                        new Range(74,80)
+
+                                );
+                            }
+                        });
+
+                        setFieldSetMapper( new BeanWrapperFieldSetMapper<Product>(){
+                            {
+                                setTargetType(Product.class);
+                            }
+                        });
+                    }
+                }
+
+        );
+        //step 3 tell reader to skip the header
+        reader.setLinesToSkip(1);
+        return reader;
+
+    }
+
 
 }
