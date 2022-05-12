@@ -84,7 +84,9 @@ public class BatchCondifguration {
 	@Bean
 	public Step step2() {
 		return steps.get("step2").<Integer, Integer>chunk(3)
-				.reader(jsonItemReader(null))
+				
+				.reader(jdbcCursorItemReader())
+				//.reader(jsonItemReader(null))
 				//.reader(flatfixFileItemReader(null))
 				//.reader(xmlItemReader(null))
 				//.reader(flatFileItemReader(null))
