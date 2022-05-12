@@ -2,32 +2,41 @@ package com.roark.model;
 
 import java.math.BigDecimal;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement(name="product")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Product {
 
-    private Integer productID;
+    private Integer productId;
+
+    @XmlElement(name="productName")
     private String prodName;
   
     private BigDecimal price;
     private Integer unit;
-    private String ProductDesc;
+    private String productDesc;
 
     @Override
     public String toString() {
         return "Product{" +
-                "productID=" + productID +
+                "productID=" + productId +
                 ", productName='" + prodName + '\'' +
-                ", ProductDesc='" + ProductDesc + '\'' +
+                ", productDesc='" + productDesc + '\'' +
                 ", price=" + price +
                 ", unit=" + unit +
                 '}';
     }
 
-    public Integer getProductID() {
-        return productID;
+    public Integer getProductId() {
+        return productId;
     }
 
-    public void setProductID(Integer productID) {
-        this.productID = productID;
+    public void setProductId(Integer productId) {
+        this.productId = productId;
     }
 
     public String getProdName() {
@@ -39,11 +48,11 @@ public class Product {
     }
 
     public String getProductDesc() {
-        return ProductDesc;
+        return productDesc;
     }
 
     public void setProductDesc(String productDesc) {
-        ProductDesc = productDesc;
+        productDesc = productDesc;
     }
 
     public BigDecimal getPrice() {
