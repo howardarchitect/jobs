@@ -1,5 +1,7 @@
 package com.roark.config;
 
+import javax.sql.DataSource;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
@@ -10,12 +12,15 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
 import org.springframework.batch.item.file.transform.Range;
+import org.springframework.batch.item.json.JacksonJsonObjectReader;
+import org.springframework.batch.item.json.JsonItemReader;
 import org.springframework.batch.item.xml.StaxEventItemReader;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
 import com.roark.listener.HwJobExecutionListener;
@@ -50,6 +56,10 @@ public class BatchCondifguration {
 
 	@Autowired
 	private InMemeItemProcessor inMemeItemProcessor;
+	
+	@Autowired
+	private DataSource dataSource;
+
 
 	public Tasklet helloWorldTasklet() {
 		return (new Tasklet() {
@@ -74,7 +84,8 @@ public class BatchCondifguration {
 	@Bean
 	public Step step2() {
 		return steps.get("step2").<Integer, Integer>chunk(3)
-				.reader(flatfixFileItemReader(null))
+				.reader(jsonItemReader(null))
+				//.reader(flatfixFileItemReader(null))
 				//.reader(xmlItemReader(null))
 				//.reader(flatFileItemReader(null))
 				// .reader(reader())
@@ -185,6 +196,30 @@ public class BatchCondifguration {
         return reader;
 
     }
+	
+	@Bean
+    public JdbcCursorItemReader jdbcCursorItemReader(){
+        JdbcCursorItemReader reader = new JdbcCursorItemReader();
+        reader.setDataSource(this.dataSource);
+        reader.setSql("select product_id, prod_name, prod_desc as productDesc, unit, price from products");
+        reader.setRowMapper(new BeanPropertyRowMapper(){
+            {
+                setMappedClass(Product.class);
+            }
+        });
+        return reader;
+    }
+
+    @StepScope
+    @Bean
+    public JsonItemReader jsonItemReader(
+            @Value( "#{jobParameters['inputFile']}" )
+                                                   FileSystemResource inputFile){
+        JsonItemReader reader = new JsonItemReader(inputFile, new JacksonJsonObjectReader(Product.class));
+        return reader;
+
+    }
+
 
 
 }
